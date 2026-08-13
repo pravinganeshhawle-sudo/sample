@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Financial & Health Insurance Advisor</title>
+    <style>
+        :root {
+            --primary: #c02b2b;
+            --primary-hover: #9a2020;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --accent-green: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 680px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+            padding: 32px;
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            max-width: 680px;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            height: 6px;
+            width: 100%;
+            background: var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 14%; /* Step 1 default */
+            background: var(--primary);
+            transition: width 0.3s ease;
+        }
+
+        /* Step Card Styling */
+        .step {
+            display: none;
+            animation: fadeIn 0.3s ease-in-out forwards;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+
+        p.sub-heading {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+        }
+
+        /* Grid Selection Cards */
+        .grid-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .option-card {
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: #fff;
+        }
+
+        .option-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .option-card.selected {
+            border-color: var(--primary);
+            background-color: #fff5f5;
+        }
+
+        .option-card .icon {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .option-card .title {
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        /* Inputs & Sliders */
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        input[type="text"], input[type="number"], select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 16px;
+            outline: none;
+            transition: border 0.2s;
+        }
+
+        input[type="text"]:focus, input[type="number"]:focus, select:focus {
+            border-color: var(--primary);
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            accent-color: var(--primary);
+        }
+
+        .slider-value {
+            font-weight: 700;
+            font-size: 18px;
+            min-width: 80px;
+            text-align: right;
+            color: var(--primary);
+        }
+
+        /* Button Group */
+        .btn-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-toggle {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid var(--border);
+            background: #fff;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-toggle.selected {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Navigation Buttons */
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 32px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            border: none;
+            transition: background 0.2s;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: var(--text-main);
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e1;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+        }
+
+        /* Processing Screen */
+        .loader-wrapper {
+            text-align: center;
+            padding: 40px 0;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Dashboard Results */
+        .score-card {
+            background: #fdf2f2;
+            border: 1px solid #fecaca;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .score-number {
+            font-size: 42px;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .gap-box {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .gap-title {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .gap-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-top: 4px;
+        }
+
+        .rec-card {
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--primary);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            background: white;
+        }
+
+        .rec-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .rec-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            font-size: 11px;
+            font-weight: 700;
+            border-radius: 4px;
+            background: #fee2e2;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .rec-list {
+            margin-top: 8px;
+            padding-left: 18px;
+            font-size: 14px;
+            color: #475569;
+        }
+    </style>
+</head>
+<body>
+
+<div class="progress-container">
+    <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+    </div>
+</div>
+
+<div class="container">
+    
+    <!-- STEP 1: GOAL SETTING -->
+    <div class="step active" id="step1">
+        <h2>Let's find the right protection for your future.</h2>
+        <p class="sub-heading">Select your primary objective to customize your recommendations.</p>
+        
+        <div class="grid-selector">
+            <div class="option-card selected" onclick="selectGoal('all', this)">
+                <div class="icon">🛡️</div>
+                <div class="title">Comprehensive Protection</div>
+            </div>
+            <div class="option-card" onclick="selectGoal('health', this)">
+                <div class="icon">🏥</div>
+                <div class="title">Health Insurance Only</div>
+            </div>
+            <div class="option-card" onclick="selectGoal('life', this)">
+                <div class="icon">👨‍👩‍👧‍👦</div>
+                <div class="title">Life / Term Cover</div>
+            </div>
+            <div class="option-card" onclick="selectGoal('critical', this)">
+                <div class="icon">🩹</div>
+                <div class="title">Critical Disease Cover</div>
+            </div>
+        </div>
+
+        <div class="nav-buttons">
+            <div></div> <!-- Empty div for spacing -->
+            <button class="btn btn-primary" onclick="nextStep(2)">Continue</button>
+        </div>
+    </div>
+
+    <!-- STEP 2: DEMOGRAPHICS -->
+    <div class="step" id="step2">
+        <h2>Tell us a bit about yourself</h2>
+        <p class="sub-heading">Your age and family setup influence coverage eligibility and premiums.</p>
+
+        <div class="form-group">
+            <label>Primary Applicant Age: <span id="ageVal">30</span> yrs</label>
+            <div class="slider-container">
+                <input type="range" id="age" min="18" max="75" value="30" oninput="document.getElementById('ageVal').innerText = this.value">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Gender</label>
+            <div class="btn-group">
+                <button class="btn-toggle selected" onclick="selectGender('male', this)">Male</button>
+                <button class="btn-toggle" onclick="selectGender('female', this)">Female</button>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Who needs insurance coverage?</label>
+            <div class="btn-group">
+                <button class="btn-toggle selected" id="depSelf" onclick="toggleDep('self')">Self</button>
+                <button class="btn-toggle" id="depSpouse" onclick="toggleDep('spouse')">Spouse</button>
+                <button class="btn-toggle" id="depKids" onclick="toggleDep('kids')">Children</button>
+                <button class="btn-toggle" id="depParents" onclick="toggleDep('parents')">Parents</button>
+            </div>
+        </div>
+
+        <div class="nav-buttons">
+            <button class="btn btn-secondary" onclick="nextStep(1)">Back</button>
+            <button class="btn btn-primary" onclick="nextStep(3)">Continue</button>
+        </div>
+    </div>
+
+    <!-- STEP 3: FINANCIAL SNAPSHOT -->
+    <div class="step" id="step3">
+        <h2>Let's look at your finances</h2>
+        <p class="sub-heading">This helps calculate your Human Life Value and financial safety net.</p>
+
+        <div class="form-group">
+            <label>Annual Income (in ₹ Lakhs)</label>
+            <div class="slider-container">
+                <input type="range" id="income" min="3" max="100" value="12" oninput="document.getElementById('incomeVal').innerText = '₹ ' + this.value + ' Lakhs'">
+                <div class="slider-value" id="incomeVal">₹ 12 Lakhs</div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Total Outstanding Debt / Loans (Home, Car, Personal)</label>
+            <div class="slider-container">
+                <input type="range" id="loans" min="0" max="200" value="0" oninput="document.getElementById('loansVal').innerText = '₹ ' + this.value + ' Lakhs'">
+                <div class="slider-value" id="loansVal">₹ 0 Lakhs</div>
+            </div>
+        </div>
+
+        <div class="nav-buttons">
+            <button class="btn btn-secondary" onclick="nextStep(2)">Back</button>
+            <button class="btn btn-primary" onclick="nextStep(4)">Continue</button>
+        </div>
+    </div>
+
+    <!-- STEP 4: HEALTH & LIFESTYLE -->
+    <div class="step" id="step4">
+        <h2>A quick check on health & lifestyle</h2>
+        <p class="sub-heading">Ensures we route you to plans with immediate coverage or chronic management.</p>
+
+        <div class="form-group">
+            <label>Do you or covered members consume tobacco?</label>
+            <div class="btn-group">
+                <button class="btn-toggle" onclick="selectTobacco(true, this)">Yes</button>
+                <button class="btn-toggle selected" onclick="selectTobacco(false, this)">No</button>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Any existing conditions? (Select all that apply)</label>
+            <div class="btn-group" style="flex-wrap: wrap;">
+                <button class="btn-toggle" id="pedDiabetes" onclick="togglePED('diabetes')">Diabetes</button>
+                <button class="btn-toggle" id="pedBP" onclick="togglePED('bp')">Hypertension / BP</button>
+                <button class="btn-toggle" id="pedAsthma" onclick="togglePED('asthma')">Asthma</button>
+                <button class="btn-toggle selected" id="pedNone" onclick="togglePED('none')">None</button>
+            </div>
+        </div>
+
+        <div class="nav-buttons">
+            <button class="btn btn-secondary" onclick="nextStep(3)">Back</button>
+            <button class="btn btn-primary" onclick="nextStep(5)">Continue</button>
+        </div>
+    </div>
+
+    <!-- STEP 5: EXISTING COVERAGE -->
+    <div class="step" id="step5">
+        <h2>What coverage do you already have?</h2>
+        <p class="sub-heading">We calculate the exact gap so you don't overpay for duplicate cover.</p>
+
+        <div class="form-group">
+            <label>Employer Corporate Health Cover (in ₹ Lakhs)</label>
+            <div class="slider-container">
+                <input type="range" id="corpCover" min="0" max="20" value="3" oninput="document.getElementById('corpVal').innerText = '₹ ' + this.value + ' Lakhs'">
+                <div class="slider-value" id="corpVal">₹ 3 Lakhs</div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Existing Personal Life Insurance Cover (in ₹ Lakhs)</label>
+            <div class="slider-container">
+                <input type="range" id="lifeCover" min="0" max="300" value="0" oninput="document.getElementById('lifeVal').innerText = '₹ ' + this.value + ' Lakhs'">
+                <div class="slider-value" id="lifeVal">₹ 0 Lakhs</div>
+            </div>
+        </div>
+
+        <div class="nav-buttons">
+            <button class="btn btn-secondary" onclick="nextStep(4)">Back</button>
+            <button class="btn btn-primary" onclick="runAnalysis()">Analyze My Profile</button>
+        </div>
+    </div>
+
+    <!-- STEP 6: PROCESSING SCREEN -->
+    <div class="step" id="step6">
+        <div class="loader-wrapper">
+            <div class="spinner"></div>
+            <h2>Analyzing your financial & medical profile...</h2>
+            <p class="sub-heading" id="dynamicStatus">Calculating Human Life Value...</p>
+        </div>
+    </div>
+
+    <!-- STEP 7: RECOMMENDATION DASHBOARD -->
+    <div class="step" id="step7">
+        <h2>Your Personalized Protection Plan</h2>
+        <p class="sub-heading">Based on Aditya Birla Capital product rules & financial safety benchmarks.</p>
+
+        <div class="score-card">
+            <div style="font-weight: 600; color: #b91c1c;">PROTECTION SCORE</div>
+            <div class="score-number" id="scoreNum">45%</div>
+            <p style="font-size: 13px; color: #7f1d1d;" id="scoreStatus">Under-insured. High risk in case of major medical emergency.</p>
+        </div>
+
+        <h3 style="font-size: 16px; margin-bottom: 12px;">Financial Gap Analysis</h3>
+        
+        <div class="gap-box">
+            <div class="gap-title">Recommended Life Cover (Human Life Value)</div>
+            <div class="gap-value" id="lifeGapVal">₹ 1.2 Crore (Gap: ₹ 1.2 Cr)</div>
+        </div>
+
+        <div class="gap-box">
+            <div class="gap-title">Recommended Health Cover</div>
+            <div class="gap-value" id="healthGapVal">₹ 15 Lakhs (Gap: ₹ 12 Lakhs)</div>
+        </div>
+
+        <h3 style="font-size: 16px; margin-top: 24px; margin-bottom: 12px;">Recommended Aditya Birla Plans</h3>
+        
+        <div id="recommendationsContainer"></div>
+
+        <div class="nav-buttons">
+            <button class="btn btn-secondary" onclick="nextStep(1)">Start Over</button>
+            <button class="btn btn-primary" onclick="alert('Connecting with an Aditya Birla Health Advisor...')">Speak to an Advisor</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // User State Object
+    const state = {
+        goal: 'all',
+        age: 30,
+        gender: 'male',
+        dependents: { self: true, spouse: false, kids: false, parents: false },
+        income: 12, // In Lakhs
+        loans: 0, // In Lakhs
+        tobacco: false,
+        ped: { diabetes: false, bp: false, asthma: false, none: true },
+        corpCover: 3, // In Lakhs
+        lifeCover: 0 // In Lakhs
+    };
+
+    function selectGoal(goal, element) {
+        state.goal = goal;
+        document.querySelectorAll('#step1 .option-card').forEach(el => el.classList.remove('selected'));
+        element.classList.add('selected');
+    }
+
+    function selectGender(gender, element) {
+        state.gender = gender;
+        element.parentElement.querySelectorAll('.btn-toggle').forEach(el => el.classList.remove('selected'));
+        element.classList.add('selected');
+    }
+
+    function toggleDep(key) {
+        state.dependents[key] = !state.dependents[key];
+        document.getElementById('dep' + key.charAt(0).toUpperCase() + key.slice(1)).classList.toggle('selected');
+    }
+
+    function selectTobacco(val, element) {
+        state.tobacco = val;
+        element.parentElement.querySelectorAll('.btn-toggle').forEach(el => el.classList.remove('selected'));
+        element.classList.add('selected');
+    }
+
+    function togglePED(key) {
+        if (key === 'none') {
+            state.ped = { diabetes: false, bp: false, asthma: false, none: true };
+            ['Diabetes', 'BP', 'Asthma'].forEach(k => document.getElementById('ped' + k).classList.remove('selected'));
+            document.getElementById('pedNone').classList.add('selected');
+        } else {
+            state.ped.none = false;
+            document.getElementById('pedNone').classList.remove('selected');
+            state.ped[key] = !state.ped[key];
+            document.getElementById('ped' + key.charAt(0).toUpperCase() + key.slice(1)).classList.toggle('selected');
+        }
+    }
+
+    function nextStep(stepNum) {
+        // Collect dynamic state before switching
+        state.age = parseInt(document.getElementById('age').value);
+        state.income = parseInt(document.getElementById('income').value);
+        state.loans = parseInt(document.getElementById('loans').value);
+        state.corpCover = parseInt(document.getElementById('corpCover').value);
+        state.lifeCover = parseInt(document.getElementById('lifeCover').value);
+
+        // Update step UI
+        document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
+        document.getElementById('step' + stepNum).classList.add('active');
+
+        // Update progress bar
+        const progress = (stepNum / 7) * 100;
+        document.getElementById('progressFill').style.width = progress + '%';
+    }
+
+    function runAnalysis() {
+        nextStep(6);
+        
+        const statuses = [
+            "Calculating Human Life Value...",
+            "Checking Pre-existing Disease Underwriting Rules...",
+            "Matching Aditya Birla Health Insurance Plans..."
+        ];
+        
+        let idx = 0;
+        const interval = setInterval(() => {
+            idx++;
+            if (idx < statuses.length) {
+                document.getElementById('dynamicStatus').innerText = statuses[idx];
+            } else {
+                clearInterval(interval);
+                calculateResults();
+                nextStep(7);
+            }
+        }, 800);
+    }
+
+    function calculateResults() {
+        // 1. Calculations
+        const idealLifeCover = (state.income * 10) + state.loans;
+        const lifeGap = Math.max(0, idealLifeCover - state.lifeCover);
+
+        let idealHealthCover = Math.max(10, state.income * 0.75);
+        if (state.dependents.parents) idealHealthCover += 10;
+        const healthGap = Math.max(0, idealHealthCover - state.corpCover);
+
+        // Score Calculation
+        let lifeScore = state.lifeCover >= idealLifeCover ? 50 : (state.lifeCover / idealLifeCover) * 50;
+        let healthScore = state.corpCover >= idealHealthCover ? 50 : (state.corpCover / idealHealthCover) * 50;
+        let totalScore = Math.round(lifeScore + healthScore);
+
+        // Update UI Text
+        document.getElementById('scoreNum').innerText = totalScore + '%';
+        document.getElementById('lifeGapVal').innerText = `₹ ${(idealLifeCover/100).toFixed(1)} Cr (Gap: ₹ ${(lifeGap/100).toFixed(1)} Cr)`;
+        document.getElementById('healthGapVal').innerText = `₹ ${idealHealthCover.toFixed(0)} Lakhs (Gap: ₹ ${healthGap.toFixed(0)} Lakhs)`;
+
+        // Plan Logic based on Aditya Birla Portfolio
+        const recsContainer = document.getElementById('recommendationsContainer');
+        recsContainer.innerHTML = '';
+
+        const plans = [];
+
+        // Condition A: Senior Citizens
+        if (state.age >= 55 || state.dependents.parents) {
+            plans.push({
+                priority: 'MUST HAVE FOR SENIORS',
+                title: 'Activ Care Classic (Senior Citizen Plan)',
+                features: [
+                    'Tailored for ages 55–80 years.',
+                    'Earn up to 21% HealthReturns™ for staying active.',
+                    'Dedicated Health Coach & Home Cashless Care.'
+                ]
+            });
+        }
+
+        // Condition B: Pre-existing Conditions (Diabetes, BP)
+        if (state.ped.diabetes || state.ped.bp || state.ped.asthma) {
+            plans.push({
+                priority: 'RECOMMENDED FOR PRE-EXISTING CONDITIONS',
+                title: 'Activ One VYTL (Day 1 Cover)',
+                features: [
+                    'Day 1 Cashless Cover for Diabetes, BP, and Asthma.',
+                    'No capping on room rent or medical procedures.',
+                    'Up to 100% premium back via HealthReturns™ program.'
+                ]
+            });
+        } 
+        // Condition C: Young Adults / General Families
+        else if (state.age <= 40 && !state.dependents.parents) {
+            plans.push({
+                priority: 'BEST MATCH FOR YOUNG FAMILIES',
+                title: 'Activ Yuva / Activ One MAX',
+                features: [
+                    'Industry-first 100% premium refund through HealthReturns™.',
+                    'Double Sum Insured reload from Day 1.',
+                    'Includes OPD and Worldwide Maternity Benefits.'
+                ]
+            });
+        } else {
+            plans.push({
+                priority: 'COMPREHENSIVE COVERAGE',
+                title: 'Activ One MAX+',
+                features: [
+                    'Zero capping on hospital room rents or ICU charges.',
+                    'Durable Medical Equipment & Non-Medical Expenses covered.',
+                    'Super Reload feature for unlimited refills.'
+                ]
+            });
+        }
+
+        // Condition D: Critical Illness / Cancer Add-on
+        if (state.goal === 'critical' || state.tobacco) {
+            plans.push({
+                priority: 'CRITICAL CARE SHIELD',
+                title: 'Activ Secure - Cancer Secure & Critical Illness',
+                features: [
+                    'Lump-sum cash payout upon diagnosis of 64 critical illnesses.',
+                    'Covers all 3 stages of Cancer (Early, Major, Advanced).',
+                    '7-day short survival clause.'
+                ]
+            });
+        }
+
+        // Condition E: Super Top-Up Bridge
+        if (healthGap > 5 && state.corpCover > 0) {
+            plans.push({
+                priority: 'COST-EFFECTIVE TOP-UP',
+                title: 'Super Health Plus Top Up Plan',
+                features: [
+                    `Bridges your corporate cover gap (up to ₹ 95 Lakhs coverage).`,
+                    'Highly affordable premiums compared to standard base policies.',
+                    'Uses existing corporate insurance deductible.'
+                ]
+            });
+        }
+
+        // Render Recommendations
+        plans.forEach(plan => {
+            const card = document.createElement('div');
+            card.className = 'rec-card';
+            card.innerHTML = `
+                <div class="rec-badge">${plan.priority}</div>
+                <div class="rec-title">${plan.title}</div>
+                <ul class="rec-list">
+                    ${plan.features.map(f => `<li>${f}</li>`).join('')}
+                </ul>
+            `;
+            recsContainer.appendChild(card);
+        });
+    }
+</script>
+
+</body>
+</html>
