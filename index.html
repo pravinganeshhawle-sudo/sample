@@ -85,7 +85,6 @@
     .badge-locked { background: #fee2e2; color: #991b1b; }
     .badge-expired { background: #fef3c7; color: #92400e; }
 
-    /* Mobile Responsive Player Wrapper */
     .video-wrapper {
       position: relative;
       width: 100%;
@@ -102,17 +101,6 @@
       height: 100%;
       object-fit: contain;
       background: #000;
-    }
-
-    /* Mobile-safe protective overlay */
-    .video-protection-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: calc(100% - 60px);
-      z-index: 5;
-      pointer-events: none; /* Allows mobile touches to hit player controls */
     }
 
     .limit-overlay {
@@ -181,31 +169,29 @@
     </div>
   </div>
 
-  <!-- 3. MOBILE-OPTIMIZED VIDEO PLAYER SECTION -->
+  <!-- 3. UNIVERSAL VIDEO PLAYER SECTION -->
   <div id="playerSection" class="hidden">
     <div class="card">
       <button onclick="closePlayer()" style="width:auto; padding:8px 16px; background:#64748b; margin-bottom:12px;">&larr; Back to Catalog</button>
       <h3 id="currentVideoTitle" style="font-size:1.1rem; margin-top:0;">Video Title</h3>
 
-      <div class="video-wrapper" oncontextmenu="return false;">
-        <div class="video-protection-overlay"></div>
-        
+      <div class="video-wrapper">
         <div id="limitOverlay" class="limit-overlay hidden">
           <h3 style="color:#ef4444; margin-bottom:5px; font-size:1.1rem;">1.8x Watch Limit Reached</h3>
           <p style="margin-bottom:15px; font-size:0.9rem;">You have consumed the maximum watch quota for this course video.</p>
           <button onclick="closePlayerAndRepurchase()" style="width:auto; padding:10px 20px; background:var(--primary);">Re-purchase to Reset Quota</button>
         </div>
 
-        <!-- Inline execution attributes added for iOS Safari and Android Chrome compatibility -->
+        <!-- Direct video element configured for desktop & mobile cross-domain media compatibility -->
         <video 
           id="courseVideoPlayer" 
           controls 
           playsinline 
           webkit-playsinline 
-          preload="metadata" 
+          preload="metadata"
           controlsList="nodownload noremoteplayback" 
-          disablePictureInPicture>
-          <source id="videoSource" src="" type="video/mp4" />
+          disablePictureInPicture
+          oncontextmenu="return false;">
           Your browser does not support HTML5 video playback.
         </video>
       </div>
@@ -250,19 +236,19 @@
   // ==========================================
   // CONFIGURATION & SETUP
   // ==========================================
- // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyAgmdaIEqo9jjispJgRZO_HksMzCEkDZJ4",
-  authDomain: "course-1e801.firebaseapp.com",
-  projectId: "course-1e801",
-  storageBucket: "course-1e801.firebasestorage.app",
-  messagingSenderId: "140585295435",
-  appId: "1:140585295435:web:7733e65f94c1c7cc1737ce",
-  measurementId: "G-ELPYP6H10E"
-};
+  const firebaseConfig = {
+    apiKey: "AIzaSyAgmdaIEqo9jjispJgRZO_HksMzCEkDZJ4",
+    authDomain: "course-1e801.firebaseapp.com",
+    projectId: "course-1e801",
+    storageBucket: "course-1e801.firebasestorage.app",
+    messagingSenderId: "140585295435",
+    appId: "1:140585295435:web:7733e65f94c1c7cc1737ce",
+    measurementId: "G-ELPYP6H10E"
+  };
 
   const RAZORPAY_KEY_ID = "rzp_test_TRZUTqu2phk18H";
   const ADMIN_EMAIL = "admin@example.com";
+  const VIDEO_URL = "https://github.com/pravinganeshhawle01-wq/course-videos/releases/download/v1/i_want_animated_card_text_rev.1.mp4";
 
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
@@ -279,7 +265,7 @@ const firebaseConfig = {
         { 
           id: "v1_intro", 
           title: "01. Introduction to Web Architecture", 
-          src: "https://github.com/pravinganeshhawle01-wq/course-videos/releases/download/v1/i_want_animated_card_text_rev.1.mp4" 
+          src: VIDEO_URL 
         }
       ]
     },
@@ -293,7 +279,7 @@ const firebaseConfig = {
         { 
           id: "v1_python_intro", 
           title: "01. Python Setup & Basics", 
-          src: "https://github.com/pravinganeshhawle01-wq/course-videos/releases/download/v1/i_want_animated_card_text_rev.1.mp4" 
+          src: VIDEO_URL 
         }
       ]
     }
@@ -490,7 +476,7 @@ const firebaseConfig = {
   }
 
   // ==========================================
-  // MOBILE-OPTIMIZED VIDEO PLAYER LOGIC
+  // UNIVERSAL VIDEO PLAYER LOGIC
   // ==========================================
   const videoPlayer = document.getElementById('courseVideoPlayer');
 
@@ -504,7 +490,7 @@ const firebaseConfig = {
     document.getElementById('limitOverlay').classList.add('hidden');
     document.getElementById('currentVideoTitle').innerText = currentActiveVideo.title;
 
-    // Load initial stored state
+    // Load saved states from Firestore cache
     const history = userPurchases[currentCourseId]?.watchHistory?.[currentActiveVideo.id] || {};
     localWatchedSeconds = history.watchedSeconds || 0;
     lastSavedPosition = history.lastPosition || 0;
@@ -512,7 +498,7 @@ const firebaseConfig = {
 
     document.getElementById('resumeNotice').innerText = `${Math.floor(lastSavedPosition)}s`;
 
-    // Direct source update
+    // Direct video element assignment fixes cross-domain redirects on Chrome & Safari
     videoPlayer.src = currentActiveVideo.src;
     videoPlayer.load();
 
@@ -520,22 +506,24 @@ const firebaseConfig = {
   }
 
   function setupPlayerEventListeners() {
-    // 1. Metadata loaded -> calculate 1.8x limit
-    videoPlayer.onloadedmetadata = () => {
-      const duration = videoPlayer.duration;
-      maxAllowedSeconds = duration * 1.8;
+    const calculateQuota = () => {
+      if (videoPlayer.duration && !isNaN(videoPlayer.duration) && videoPlayer.duration > 0) {
+        maxAllowedSeconds = videoPlayer.duration * 1.8;
+        updateStatsUI();
 
-      updateStatsUI();
-
-      if (localWatchedSeconds >= maxAllowedSeconds) {
-        lockVideoPlayer();
-        return;
+        if (localWatchedSeconds >= maxAllowedSeconds) {
+          lockVideoPlayer();
+        }
       }
     };
 
-    // 2. Playback start handling (safely seeks position on mobile user gesture)
+    videoPlayer.onloadedmetadata = calculateQuota;
+    videoPlayer.ondurationchange = calculateQuota;
+
     videoPlayer.onplay = () => {
-      // Perform resume seek once upon user-triggered play for mobile safety
+      calculateQuota();
+
+      // Resume seeking on initial user playback interaction
       if (!hasResumedPosition && lastSavedPosition > 0 && lastSavedPosition < videoPlayer.duration) {
         videoPlayer.currentTime = lastSavedPosition;
         hasResumedPosition = true;
@@ -546,7 +534,7 @@ const firebaseConfig = {
         return;
       }
 
-      // Local 1-second watch tracking
+      // Track seconds spent playing
       clearInterval(trackingInterval);
       trackingInterval = setInterval(() => {
         if (!videoPlayer.paused && !videoPlayer.ended) {
@@ -559,14 +547,13 @@ const firebaseConfig = {
         }
       }, 1000);
 
-      // Periodic 10s background sync to Firestore
+      // Periodic 10s sync to Firestore
       clearInterval(syncTimer);
       syncTimer = setInterval(() => {
         saveProgressToFirestore();
       }, 10000);
     };
 
-    // 3. Pause / End Event Listeners
     videoPlayer.onpause = () => {
       clearInterval(trackingInterval);
       clearInterval(syncTimer);
