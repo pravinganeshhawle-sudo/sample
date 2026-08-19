@@ -1,740 +1,429 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Financial & Health Insurance Advisor</title>
-    <style>
-        :root {
-            --primary: #c02b2b;
-            --primary-hover: #9a2020;
-            --bg: #f8fafc;
-            --card-bg: #ffffff;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --border: #e2e8f0;
-            --accent-green: #10b981;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Course Portal with 6-Month Expiry</title>
+  
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        }
-
-        body {
-            background-color: var(--bg);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 680px;
-            background: var(--card-bg);
-            border-radius: 16px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
-            padding: 32px;
-            margin-top: 20px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        /* Progress Bar */
-        .progress-container {
-            width: 100%;
-            max-width: 680px;
-            margin-bottom: 10px;
-        }
-
-        .progress-bar {
-            height: 6px;
-            width: 100%;
-            background: var(--border);
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            width: 14%; /* Step 1 default */
-            background: var(--primary);
-            transition: width 0.3s ease;
-        }
-
-        /* Step Card Styling */
-        .step {
-            display: none;
-            animation: fadeIn 0.3s ease-in-out forwards;
-        }
-
-        .step.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        h2 {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 8px;
-            color: var(--text-main);
-        }
-
-        p.sub-heading {
-            font-size: 14px;
-            color: var(--text-muted);
-            margin-bottom: 24px;
-        }
-
-        /* Grid Selection Cards */
-        .grid-selector {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-
-        .option-card {
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            background: #fff;
-        }
-
-        .option-card:hover {
-            border-color: var(--primary);
-            transform: translateY(-2px);
-        }
-
-        .option-card.selected {
-            border-color: var(--primary);
-            background-color: #fff5f5;
-        }
-
-        .option-card .icon {
-            font-size: 28px;
-            margin-bottom: 10px;
-        }
-
-        .option-card .title {
-            font-weight: 600;
-            font-size: 15px;
-        }
-
-        /* Inputs & Sliders */
-        .form-group {
-            margin-bottom: 24px;
-        }
-
-        label {
-            display: block;
-            font-weight: 600;
-            font-size: 14px;
-            margin-bottom: 8px;
-        }
-
-        input[type="text"], input[type="number"], select {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            font-size: 16px;
-            outline: none;
-            transition: border 0.2s;
-        }
-
-        input[type="text"]:focus, input[type="number"]:focus, select:focus {
-            border-color: var(--primary);
-        }
-
-        .slider-container {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        input[type="range"] {
-            flex: 1;
-            accent-color: var(--primary);
-        }
-
-        .slider-value {
-            font-weight: 700;
-            font-size: 18px;
-            min-width: 80px;
-            text-align: right;
-            color: var(--primary);
-        }
-
-        /* Button Group */
-        .btn-group {
-            display: flex;
-            gap: 12px;
-        }
-
-        .btn-toggle {
-            flex: 1;
-            padding: 12px;
-            border: 1px solid var(--border);
-            background: #fff;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-
-        .btn-toggle.selected {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-
-        /* Navigation Buttons */
-        .nav-buttons {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 32px;
-        }
-
-        .btn {
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 15px;
-            cursor: pointer;
-            border: none;
-            transition: background 0.2s;
-        }
-
-        .btn-secondary {
-            background: #e2e8f0;
-            color: var(--text-main);
-        }
-
-        .btn-secondary:hover {
-            background: #cbd5e1;
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: var(--primary-hover);
-        }
-
-        /* Processing Screen */
-        .loader-wrapper {
-            text-align: center;
-            padding: 40px 0;
-        }
-
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px auto;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Dashboard Results */
-        .score-card {
-            background: #fdf2f2;
-            border: 1px solid #fecaca;
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            margin-bottom: 24px;
-        }
-
-        .score-number {
-            font-size: 42px;
-            font-weight: 800;
-            color: var(--primary);
-        }
-
-        .gap-box {
-            background: #f8fafc;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 12px;
-        }
-
-        .gap-title {
-            font-weight: 600;
-            font-size: 14px;
-            color: var(--text-muted);
-        }
-
-        .gap-value {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--text-main);
-            margin-top: 4px;
-        }
-
-        .rec-card {
-            border: 1px solid var(--border);
-            border-left: 4px solid var(--primary);
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 16px;
-            background: white;
-        }
-
-        .rec-title {
-            font-size: 16px;
-            font-weight: 700;
-            color: var(--primary);
-        }
-
-        .rec-badge {
-            display: inline-block;
-            padding: 2px 8px;
-            font-size: 11px;
-            font-weight: 700;
-            border-radius: 4px;
-            background: #fee2e2;
-            color: var(--primary);
-            margin-bottom: 8px;
-        }
-
-        .rec-list {
-            margin-top: 8px;
-            padding-left: 18px;
-            font-size: 14px;
-            color: #475569;
-        }
-    </style>
-</head>
-<body>
-
-<div class="progress-container">
-    <div class="progress-bar">
-        <div class="progress-fill" id="progressFill"></div>
-    </div>
-</div>
-
-<div class="container">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: #0f172a; color: #f8fafc; height: 100vh; display: flex; flex-direction: column; }
     
-    <!-- STEP 1: GOAL SETTING -->
-    <div class="step active" id="step1">
-        <h2>Let's find the right protection for your future.</h2>
-        <p class="sub-heading">Select your primary objective to customize your recommendations.</p>
+    #login-screen { display: flex; justify-content: center; align-items: center; width: 100%; height: 100vh; }
+    .login-card { background: #1e293b; padding: 35px; border-radius: 12px; width: 340px; text-align: center; border: 1px solid #334155; }
+    .login-card input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: white; outline: none; }
+    .login-card button { width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 6px; background: #2563eb; color: white; font-weight: bold; cursor: pointer; }
+    
+    #dashboard { display: none; flex-direction: column; height: 100vh; width: 100%; }
+    header { background: #1e293b; padding: 15px 30px; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; }
+    .nav-btn { background: #334155; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; margin-right: 8px; }
+    .logout-btn { background: #ef4444; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+
+    #catalog-view { padding: 30px; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; overflow-y: auto; }
+    .course-card { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; }
+    .course-card h3 { margin-bottom: 10px; }
+    .course-card p { font-size: 13px; color: #94a3b8; margin-bottom: 20px; }
+    .status-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-bottom: 15px; }
+    .badge-locked { background: #7f1d1d; color: #fca5a5; }
+    .badge-unlocked { background: #065f46; color: #6ee7b7; }
+    .badge-expired { background: #78350f; color: #fde68a; }
+    .buy-btn { background: #3b82f6; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; }
+    .open-btn { background: #16a34a; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; }
+
+    #player-view { display: none; flex-grow: 1; height: calc(100vh - 65px); }
+    .sidebar { width: 320px; background: #1e293b; border-right: 1px solid #334155; display: flex; flex-direction: column; }
+    .sidebar-header { padding: 20px; border-bottom: 1px solid #334155; }
+    .video-list { overflow-y: auto; flex-grow: 1; }
+    .video-item { padding: 15px 20px; border-bottom: 1px solid #334155; cursor: pointer; display: flex; flex-direction: column; gap: 5px; }
+    .video-item:hover, .video-item.active { background: #334155; }
+    
+    .main-content { flex-grow: 1; display: flex; flex-direction: column; padding: 30px; gap: 15px; position: relative; }
+    .player-container { background: #000; border-radius: 12px; overflow: hidden; position: relative; width: 100%; max-width: 900px; }
+    
+    video { width: 100%; display: block; user-select: none; -webkit-user-select: none; }
+    
+    #course-lock-overlay {
+      display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15, 23, 42, 0.96); z-index: 10; flex-direction: column;
+      justify-content: center; align-items: center; text-align: center; padding: 30px;
+    }
+    #watch-lock-banner {
+      display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15, 23, 42, 0.95); color: #ef4444; flex-direction: column;
+      justify-content: center; align-items: center; font-weight: bold; font-size: 18px; text-align: center; padding: 20px;
+    }
+    .badge { background: #334155; padding: 10px 15px; border-radius: 6px; max-width: 900px; font-size: 13px; color: #cbd5e1; }
+  </style>
+</head>
+<body oncontextmenu="return false;">
+  
+
+  <div id="login-screen">
+    <div class="login-card">
+      <h2>Course Portal Login</h2>
+      <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;">Sign in or create account</p>
+      <input type="email" id="email" placeholder="Student Email">
+      <input type="password" id="password" placeholder="Password">
+      <button onclick="handleAuth()">Sign In / Register</button>
+      <p id="err-msg" style="color: #ef4444; font-size: 12px; margin-top: 10px; display: none;"></p>
+    </div>
+  </div>
+
+  <div id="dashboard">
+    <header>
+      <div>
+        <button class="nav-btn" onclick="showCatalog()">📚 All Courses</button>
+        <span id="user-display" style="font-size: 13px; color: #94a3b8;"></span>
+      </div>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </header>
+
+    <div id="catalog-view"></div>
+
+    <div id="player-view">
+      <div class="sidebar">
+        <div class="sidebar-header">
+          <h3 id="sidebar-course-title">Course Modules</h3>
+        </div>
+        <div class="video-list" id="videoList"></div>
+      </div>
+
+      <div class="main-content">
+        <div id="course-lock-overlay">
+          <h2 id="lock-title">🔒 This Course is Locked</h2>
+          <p style="color: #94a3b8; margin: 10px 0 20px 0;" id="lock-price-text">Purchase to unlock video modules (Valid for 6 Months).</p>
+          <button class="buy-btn" style="width: auto; padding: 12px 30px;" onclick="payWithRazorpay()">Pay with Razorpay to Unlock</button>
+        </div>
+
+        <h2 id="currentTitle">Select a module</h2>
         
-        <div class="grid-selector">
-            <div class="option-card selected" onclick="selectGoal('all', this)">
-                <div class="icon">🛡️</div>
-                <div class="title">Comprehensive Protection</div>
-            </div>
-            <div class="option-card" onclick="selectGoal('health', this)">
-                <div class="icon">🏥</div>
-                <div class="title">Health Insurance Only</div>
-            </div>
-            <div class="option-card" onclick="selectGoal('life', this)">
-                <div class="icon">👨‍👩‍👧‍👦</div>
-                <div class="title">Life / Term Cover</div>
-            </div>
-            <div class="option-card" onclick="selectGoal('critical', this)">
-                <div class="icon">🩹</div>
-                <div class="title">Critical Disease Cover</div>
-            </div>
+        <div class="player-container">
+          <video id="courseVideo" controls controlsList="nodownload noremoteplayback" disablePictureInPicture oncontextmenu="return false;"></video>
+          
+          <div id="watch-lock-banner">
+            ⚠️ 1.8x Watch Limit Exceeded
+            <span style="font-size: 13px; color: #94a3b8; margin-top: 8px; font-weight: normal;">
+              You have used your maximum watch limit for this video.
+            </span>
+          </div>
         </div>
 
-        <div class="nav-buttons">
-            <div></div> <!-- Empty div for spacing -->
-            <button class="btn btn-primary" onclick="nextStep(2)">Continue</button>
-        </div>
+        <div class="badge" id="watchStats">Remaining Watch Time: -- / --</div>
+      </div>
     </div>
+  </div>
 
-    <!-- STEP 2: DEMOGRAPHICS -->
-    <div class="step" id="step2">
-        <h2>Tell us a bit about yourself</h2>
-        <p class="sub-heading">Your age and family setup influence coverage eligibility and premiums.</p>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        <div class="form-group">
-            <label>Primary Applicant Age: <span id="ageVal">30</span> yrs</label>
-            <div class="slider-container">
-                <input type="range" id="age" min="18" max="75" value="30" oninput="document.getElementById('ageVal').innerText = this.value">
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label>Gender</label>
-            <div class="btn-group">
-                <button class="btn-toggle selected" onclick="selectGender('male', this)">Male</button>
-                <button class="btn-toggle" onclick="selectGender('female', this)">Female</button>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label>Who needs insurance coverage?</label>
-            <div class="btn-group">
-                <button class="btn-toggle selected" id="depSelf" onclick="toggleDep('self')">Self</button>
-                <button class="btn-toggle" id="depSpouse" onclick="toggleDep('spouse')">Spouse</button>
-                <button class="btn-toggle" id="depKids" onclick="toggleDep('kids')">Children</button>
-                <button class="btn-toggle" id="depParents" onclick="toggleDep('parents')">Parents</button>
-            </div>
-        </div>
-
-        <div class="nav-buttons">
-            <button class="btn btn-secondary" onclick="nextStep(1)">Back</button>
-            <button class="btn btn-primary" onclick="nextStep(3)">Continue</button>
-        </div>
-    </div>
-
-    <!-- STEP 3: FINANCIAL SNAPSHOT -->
-    <div class="step" id="step3">
-        <h2>Let's look at your finances</h2>
-        <p class="sub-heading">This helps calculate your Human Life Value and financial safety net.</p>
-
-        <div class="form-group">
-            <label>Annual Income (in ₹ Lakhs)</label>
-            <div class="slider-container">
-                <input type="range" id="income" min="3" max="100" value="12" oninput="document.getElementById('incomeVal').innerText = '₹ ' + this.value + ' Lakhs'">
-                <div class="slider-value" id="incomeVal">₹ 12 Lakhs</div>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label>Total Outstanding Debt / Loans (Home, Car, Personal)</label>
-            <div class="slider-container">
-                <input type="range" id="loans" min="0" max="200" value="0" oninput="document.getElementById('loansVal').innerText = '₹ ' + this.value + ' Lakhs'">
-                <div class="slider-value" id="loansVal">₹ 0 Lakhs</div>
-            </div>
-        </div>
-
-        <div class="nav-buttons">
-            <button class="btn btn-secondary" onclick="nextStep(2)">Back</button>
-            <button class="btn btn-primary" onclick="nextStep(4)">Continue</button>
-        </div>
-    </div>
-
-    <!-- STEP 4: HEALTH & LIFESTYLE -->
-    <div class="step" id="step4">
-        <h2>A quick check on health & lifestyle</h2>
-        <p class="sub-heading">Ensures we route you to plans with immediate coverage or chronic management.</p>
-
-        <div class="form-group">
-            <label>Do you or covered members consume tobacco?</label>
-            <div class="btn-group">
-                <button class="btn-toggle" onclick="selectTobacco(true, this)">Yes</button>
-                <button class="btn-toggle selected" onclick="selectTobacco(false, this)">No</button>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label>Any existing conditions? (Select all that apply)</label>
-            <div class="btn-group" style="flex-wrap: wrap;">
-                <button class="btn-toggle" id="pedDiabetes" onclick="togglePED('diabetes')">Diabetes</button>
-                <button class="btn-toggle" id="pedBP" onclick="togglePED('bp')">Hypertension / BP</button>
-                <button class="btn-toggle" id="pedAsthma" onclick="togglePED('asthma')">Asthma</button>
-                <button class="btn-toggle selected" id="pedNone" onclick="togglePED('none')">None</button>
-            </div>
-        </div>
-
-        <div class="nav-buttons">
-            <button class="btn btn-secondary" onclick="nextStep(3)">Back</button>
-            <button class="btn btn-primary" onclick="nextStep(5)">Continue</button>
-        </div>
-    </div>
-
-    <!-- STEP 5: EXISTING COVERAGE -->
-    <div class="step" id="step5">
-        <h2>What coverage do you already have?</h2>
-        <p class="sub-heading">We calculate the exact gap so you don't overpay for duplicate cover.</p>
-
-        <div class="form-group">
-            <label>Employer Corporate Health Cover (in ₹ Lakhs)</label>
-            <div class="slider-container">
-                <input type="range" id="corpCover" min="0" max="20" value="3" oninput="document.getElementById('corpVal').innerText = '₹ ' + this.value + ' Lakhs'">
-                <div class="slider-value" id="corpVal">₹ 3 Lakhs</div>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label>Existing Personal Life Insurance Cover (in ₹ Lakhs)</label>
-            <div class="slider-container">
-                <input type="range" id="lifeCover" min="0" max="300" value="0" oninput="document.getElementById('lifeVal').innerText = '₹ ' + this.value + ' Lakhs'">
-                <div class="slider-value" id="lifeVal">₹ 0 Lakhs</div>
-            </div>
-        </div>
-
-        <div class="nav-buttons">
-            <button class="btn btn-secondary" onclick="nextStep(4)">Back</button>
-            <button class="btn btn-primary" onclick="runAnalysis()">Analyze My Profile</button>
-        </div>
-    </div>
-
-    <!-- STEP 6: PROCESSING SCREEN -->
-    <div class="step" id="step6">
-        <div class="loader-wrapper">
-            <div class="spinner"></div>
-            <h2>Analyzing your financial & medical profile...</h2>
-            <p class="sub-heading" id="dynamicStatus">Calculating Human Life Value...</p>
-        </div>
-    </div>
-
-    <!-- STEP 7: RECOMMENDATION DASHBOARD -->
-    <div class="step" id="step7">
-        <h2>Your Personalized Protection Plan</h2>
-        <p class="sub-heading">Based on Aditya Birla Capital product rules & financial safety benchmarks.</p>
-
-        <div class="score-card">
-            <div style="font-weight: 600; color: #b91c1c;">PROTECTION SCORE</div>
-            <div class="score-number" id="scoreNum">45%</div>
-            <p style="font-size: 13px; color: #7f1d1d;" id="scoreStatus">Under-insured. High risk in case of major medical emergency.</p>
-        </div>
-
-        <h3 style="font-size: 16px; margin-bottom: 12px;">Financial Gap Analysis</h3>
-        
-        <div class="gap-box">
-            <div class="gap-title">Recommended Life Cover (Human Life Value)</div>
-            <div class="gap-value" id="lifeGapVal">₹ 1.2 Crore (Gap: ₹ 1.2 Cr)</div>
-        </div>
-
-        <div class="gap-box">
-            <div class="gap-title">Recommended Health Cover</div>
-            <div class="gap-value" id="healthGapVal">₹ 15 Lakhs (Gap: ₹ 12 Lakhs)</div>
-        </div>
-
-        <h3 style="font-size: 16px; margin-top: 24px; margin-bottom: 12px;">Recommended Aditya Birla Plans</h3>
-        
-        <div id="recommendationsContainer"></div>
-
-        <div class="nav-buttons">
-            <button class="btn btn-secondary" onclick="nextStep(1)">Start Over</button>
-            <button class="btn btn-primary" onclick="alert('Connecting with an Aditya Birla Health Advisor...')">Speak to an Advisor</button>
-        </div>
-    </div>
-
-</div>
-
-<script>
-    // User State Object
-    const state = {
-        goal: 'all',
-        age: 30,
-        gender: 'male',
-        dependents: { self: true, spouse: false, kids: false, parents: false },
-        income: 12, // In Lakhs
-        loans: 0, // In Lakhs
-        tobacco: false,
-        ped: { diabetes: false, bp: false, asthma: false, none: true },
-        corpCover: 3, // In Lakhs
-        lifeCover: 0 // In Lakhs
+    // FIREBASE CONFIGURATION
+    const firebaseConfig = {
+      apiKey: "AIzaSyAgmdaIEqo9jjispJgRZO_HksMzCEkDZJ4",
+      authDomain: "course-1e801.firebaseapp.com",
+      projectId: "course-1e801",
+      storageBucket: "course-1e801.firebasestorage.app",
+      messagingSenderId: "140585295435",
+      appId: "1:140585295435:web:7733e65f94c1c7cc1737ce",
+      measurementId: "G-ELPYP6H10E"
     };
 
-    function selectGoal(goal, element) {
-        state.goal = goal;
-        document.querySelectorAll('#step1 .option-card').forEach(el => el.classList.remove('selected'));
-        element.classList.add('selected');
-    }
+    // RAZORPAY TEST KEY
+    const RAZORPAY_KEY_ID = "rzp_test_TRZUTqu2phk18H";
 
-    function selectGender(gender, element) {
-        state.gender = gender;
-        element.parentElement.querySelectorAll('.btn-toggle').forEach(el => el.classList.remove('selected'));
-        element.classList.add('selected');
-    }
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-    function toggleDep(key) {
-        state.dependents[key] = !state.dependents[key];
-        document.getElementById('dep' + key.charAt(0).toUpperCase() + key.slice(1)).classList.toggle('selected');
-    }
+    const courses = [
+      {
+        id: "course_web_dev",
+        title: "Fullstack Web Development",
+        description: "Master HTML, CSS, JavaScript and backend basics.",
+        priceDisplay: "₹499",
+        amountInPaise: 49900,
+        videos: [
+          { id: "wd_v1", title: "01. Fullstack Introduction", src: "https://github.com/pravinganeshhawle01-wq/course-videos/releases/download/v1/i_want_animated_card_text_rev.1.mp4" },
+          { id: "wd_v2", title: "02. Building UI Layouts", src: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4" }
+        ]
+      },
+      {
+        id: "course_python",
+        title: "Python Data Science",
+        description: "Learn Python, Pandas, Data Visualization & Analysis.",
+        priceDisplay: "₹799",
+        amountInPaise: 79900,
+        videos: [
+          { id: "py_v1", title: "01. Python Setup", src: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4" }
+        ]
+      }
+    ];
 
-    function selectTobacco(val, element) {
-        state.tobacco = val;
-        element.parentElement.querySelectorAll('.btn-toggle').forEach(el => el.classList.remove('selected'));
-        element.classList.add('selected');
-    }
+    let currentUser = null;
+    let userPurchases = [];
+    let userPurchaseDates = {};
+    let userWatchHistory = {};
+    let activeCourse = null;
+    let activeVideo = null;
+    let lastTime = 0;
+    let syncTimer = null;
 
-    function togglePED(key) {
-        if (key === 'none') {
-            state.ped = { diabetes: false, bp: false, asthma: false, none: true };
-            ['Diabetes', 'BP', 'Asthma'].forEach(k => document.getElementById('ped' + k).classList.remove('selected'));
-            document.getElementById('pedNone').classList.add('selected');
+    const SIX_MONTHS_MS = 180 * 24 * 60 * 60 * 1000;
+    const player = document.getElementById('courseVideo');
+
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUser = user;
+        document.getElementById('user-display').innerText = user.email;
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'flex';
+        await loadUserData();
+        showCatalog();
+      } else {
+        currentUser = null;
+        document.getElementById('login-screen').style.display = 'flex';
+        document.getElementById('dashboard').style.display = 'none';
+      }
+    });
+
+    window.handleAuth = async () => {
+      const email = document.getElementById('email').value;
+      const pass = document.getElementById('password').value;
+      const errEl = document.getElementById('err-msg');
+      errEl.style.display = 'none';
+
+      try {
+        await signInWithEmailAndPassword(auth, email, pass);
+      } catch (err) {
+        if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
+          try {
+            await createUserWithEmailAndPassword(auth, email, pass);
+          } catch (createErr) {
+            errEl.innerText = createErr.message;
+            errEl.style.display = 'block';
+          }
         } else {
-            state.ped.none = false;
-            document.getElementById('pedNone').classList.remove('selected');
-            state.ped[key] = !state.ped[key];
-            document.getElementById('ped' + key.charAt(0).toUpperCase() + key.slice(1)).classList.toggle('selected');
+          errEl.innerText = err.message;
+          errEl.style.display = 'block';
         }
+      }
+    };
+
+    window.logout = () => signOut(auth);
+
+    async function loadUserData() {
+      if (!currentUser) return;
+      const userRef = doc(db, "users", currentUser.uid);
+      const userSnap = await getDoc(userRef);
+      if (userSnap.exists()) {
+        const data = userSnap.data();
+        userPurchases = data.purchasedCourses || [];
+        userPurchaseDates = data.purchaseDates || {};
+      } else {
+        userPurchases = [];
+        userPurchaseDates = {};
+      }
+
+      const historyRef = doc(db, "watch_history", currentUser.uid);
+      const historySnap = await getDoc(historyRef);
+      userWatchHistory = historySnap.exists() ? historySnap.data() : {};
     }
 
-    function nextStep(stepNum) {
-        // Collect dynamic state before switching
-        state.age = parseInt(document.getElementById('age').value);
-        state.income = parseInt(document.getElementById('income').value);
-        state.loans = parseInt(document.getElementById('loans').value);
-        state.corpCover = parseInt(document.getElementById('corpCover').value);
-        state.lifeCover = parseInt(document.getElementById('lifeCover').value);
+    function getAccessStatus(courseId) {
+      if (!userPurchases.includes(courseId)) return "LOCKED";
+      
+      const purchaseTime = userPurchaseDates[courseId];
+      if (!purchaseTime) return "UNLOCKED";
 
-        // Update step UI
-        document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
-        document.getElementById('step' + stepNum).classList.add('active');
-
-        // Update progress bar
-        const progress = (stepNum / 7) * 100;
-        document.getElementById('progressFill').style.width = progress + '%';
+      const isExpired = (Date.now() - purchaseTime) > SIX_MONTHS_MS;
+      return isExpired ? "EXPIRED" : "UNLOCKED";
     }
 
-    function runAnalysis() {
-        nextStep(6);
-        
-        const statuses = [
-            "Calculating Human Life Value...",
-            "Checking Pre-existing Disease Underwriting Rules...",
-            "Matching Aditya Birla Health Insurance Plans..."
-        ];
-        
-        let idx = 0;
-        const interval = setInterval(() => {
-            idx++;
-            if (idx < statuses.length) {
-                document.getElementById('dynamicStatus').innerText = statuses[idx];
-            } else {
-                clearInterval(interval);
-                calculateResults();
-                nextStep(7);
-            }
-        }, 800);
-    }
+    window.showCatalog = () => {
+      document.getElementById('catalog-view').style.display = 'grid';
+      document.getElementById('player-view').style.display = 'none';
+      player.pause();
 
-    function calculateResults() {
-        // 1. Calculations
-        const idealLifeCover = (state.income * 10) + state.loans;
-        const lifeGap = Math.max(0, idealLifeCover - state.lifeCover);
+      const container = document.getElementById('catalog-view');
+      container.innerHTML = '';
 
-        let idealHealthCover = Math.max(10, state.income * 0.75);
-        if (state.dependents.parents) idealHealthCover += 10;
-        const healthGap = Math.max(0, idealHealthCover - state.corpCover);
+      courses.forEach(c => {
+        const status = getAccessStatus(c.id);
+        const card = document.createElement('div');
+        card.className = 'course-card';
 
-        // Score Calculation
-        let lifeScore = state.lifeCover >= idealLifeCover ? 50 : (state.lifeCover / idealLifeCover) * 50;
-        let healthScore = state.corpCover >= idealHealthCover ? 50 : (state.corpCover / idealHealthCover) * 50;
-        let totalScore = Math.round(lifeScore + healthScore);
+        let badgeHtml = `<span class="status-badge badge-locked">Price: ${c.priceDisplay}</span>`;
+        let buttonHtml = `<button class="buy-btn" onclick="openCourse('${c.id}')">Buy & Access (${c.priceDisplay})</button>`;
 
-        // Update UI Text
-        document.getElementById('scoreNum').innerText = totalScore + '%';
-        document.getElementById('lifeGapVal').innerText = `₹ ${(idealLifeCover/100).toFixed(1)} Cr (Gap: ₹ ${(lifeGap/100).toFixed(1)} Cr)`;
-        document.getElementById('healthGapVal').innerText = `₹ ${idealHealthCover.toFixed(0)} Lakhs (Gap: ₹ ${healthGap.toFixed(0)} Lakhs)`;
-
-        // Plan Logic based on Aditya Birla Portfolio
-        const recsContainer = document.getElementById('recommendationsContainer');
-        recsContainer.innerHTML = '';
-
-        const plans = [];
-
-        // Condition A: Senior Citizens
-        if (state.age >= 55 || state.dependents.parents) {
-            plans.push({
-                priority: 'MUST HAVE FOR SENIORS',
-                title: 'Activ Care Classic (Senior Citizen Plan)',
-                features: [
-                    'Tailored for ages 55–80 years.',
-                    'Earn up to 21% HealthReturns™ for staying active.',
-                    'Dedicated Health Coach & Home Cashless Care.'
-                ]
-            });
+        if (status === "UNLOCKED") {
+          badgeHtml = `<span class="status-badge badge-unlocked">Unlocked (6 Months Access)</span>`;
+          buttonHtml = `<button class="open-btn" onclick="openCourse('${c.id}')">Watch Course</button>`;
+        } else if (status === "EXPIRED") {
+          badgeHtml = `<span class="status-badge badge-expired">Access Expired (6 Months Ended)</span>`;
+          buttonHtml = `<button class="buy-btn" onclick="openCourse('${c.id}')">Renew Access (${c.priceDisplay})</button>`;
         }
 
-        // Condition B: Pre-existing Conditions (Diabetes, BP)
-        if (state.ped.diabetes || state.ped.bp || state.ped.asthma) {
-            plans.push({
-                priority: 'RECOMMENDED FOR PRE-EXISTING CONDITIONS',
-                title: 'Activ One VYTL (Day 1 Cover)',
-                features: [
-                    'Day 1 Cashless Cover for Diabetes, BP, and Asthma.',
-                    'No capping on room rent or medical procedures.',
-                    'Up to 100% premium back via HealthReturns™ program.'
-                ]
-            });
-        } 
-        // Condition C: Young Adults / General Families
-        else if (state.age <= 40 && !state.dependents.parents) {
-            plans.push({
-                priority: 'BEST MATCH FOR YOUNG FAMILIES',
-                title: 'Activ Yuva / Activ One MAX',
-                features: [
-                    'Industry-first 100% premium refund through HealthReturns™.',
-                    'Double Sum Insured reload from Day 1.',
-                    'Includes OPD and Worldwide Maternity Benefits.'
-                ]
-            });
+        card.innerHTML = `
+          <div>
+            <h3>${c.title}</h3>
+            <p>${c.description}</p>
+            ${badgeHtml}
+          </div>
+          ${buttonHtml}
+        `;
+        container.appendChild(card);
+      });
+    };
+
+    window.openCourse = (courseId) => {
+      activeCourse = courses.find(c => c.id === courseId);
+      document.getElementById('catalog-view').style.display = 'none';
+      document.getElementById('player-view').style.display = 'flex';
+      document.getElementById('sidebar-course-title').innerText = activeCourse.title;
+
+      const status = getAccessStatus(activeCourse.id);
+      const lockOverlay = document.getElementById('course-lock-overlay');
+
+      if (status !== "UNLOCKED") {
+        lockOverlay.style.display = 'flex';
+        if (status === "EXPIRED") {
+          document.getElementById('lock-title').innerText = "⏳ Course Access Expired";
+          document.getElementById('lock-price-text').innerText = "Your 6-month validity for this course has ended. Renew now to continue watching.";
         } else {
-            plans.push({
-                priority: 'COMPREHENSIVE COVERAGE',
-                title: 'Activ One MAX+',
-                features: [
-                    'Zero capping on hospital room rents or ICU charges.',
-                    'Durable Medical Equipment & Non-Medical Expenses covered.',
-                    'Super Reload feature for unlimited refills.'
-                ]
-            });
+          document.getElementById('lock-title').innerText = "🔒 This Course is Locked";
+          document.getElementById('lock-price-text').innerText = `Purchase ${activeCourse.title} for ${activeCourse.priceDisplay} to get 6 months unlimited access.`;
         }
+        player.pause();
+      } else {
+        lockOverlay.style.display = 'none';
+      }
 
-        // Condition D: Critical Illness / Cancer Add-on
-        if (state.goal === 'critical' || state.tobacco) {
-            plans.push({
-                priority: 'CRITICAL CARE SHIELD',
-                title: 'Activ Secure - Cancer Secure & Critical Illness',
-                features: [
-                    'Lump-sum cash payout upon diagnosis of 64 critical illnesses.',
-                    'Covers all 3 stages of Cancer (Early, Major, Advanced).',
-                    '7-day short survival clause.'
-                ]
-            });
+      renderVideoList();
+      if (activeCourse.videos.length > 0) {
+        loadVideo(activeCourse.videos[0]);
+      }
+    };
+
+    window.payWithRazorpay = () => {
+      if (!currentUser || !activeCourse) return;
+
+      const options = {
+        key: RAZORPAY_KEY_ID,
+        amount: activeCourse.amountInPaise,
+        currency: "INR",
+        name: "Course Portal",
+        description: `6 Months Access: ${activeCourse.title}`,
+        prefill: { email: currentUser.email },
+        theme: { color: "#2563eb" },
+        handler: async function (response) {
+          await unlockCourseInFirestore(activeCourse.id, response.razorpay_payment_id);
         }
+      };
 
-        // Condition E: Super Top-Up Bridge
-        if (healthGap > 5 && state.corpCover > 0) {
-            plans.push({
-                priority: 'COST-EFFECTIVE TOP-UP',
-                title: 'Super Health Plus Top Up Plan',
-                features: [
-                    `Bridges your corporate cover gap (up to ₹ 95 Lakhs coverage).`,
-                    'Highly affordable premiums compared to standard base policies.',
-                    'Uses existing corporate insurance deductible.'
-                ]
-            });
-        }
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    };
 
-        // Render Recommendations
-        plans.forEach(plan => {
-            const card = document.createElement('div');
-            card.className = 'rec-card';
-            card.innerHTML = `
-                <div class="rec-badge">${plan.priority}</div>
-                <div class="rec-title">${plan.title}</div>
-                <ul class="rec-list">
-                    ${plan.features.map(f => `<li>${f}</li>`).join('')}
-                </ul>
-            `;
-            recsContainer.appendChild(card);
-        });
+    async function unlockCourseInFirestore(courseId, paymentId) {
+      const userRef = doc(db, "users", currentUser.uid);
+      
+      await setDoc(userRef, {
+        purchasedCourses: arrayUnion(courseId),
+        purchaseDates: {
+          [courseId]: Date.now()
+        },
+        lastPaymentId: paymentId
+      }, { merge: true });
+
+      if (!userPurchases.includes(courseId)) userPurchases.push(courseId);
+      userPurchaseDates[courseId] = Date.now();
+
+      document.getElementById('course-lock-overlay').style.display = 'none';
+      showCatalog();
+      alert(`Payment Successful! You now have 6 months access to ${activeCourse.title}.`);
     }
-</script>
 
+    function renderVideoList() {
+      const list = document.getElementById('videoList');
+      list.innerHTML = '';
+
+      activeCourse.videos.forEach(v => {
+        const watched = userWatchHistory[v.id] || 0;
+        const item = document.createElement('div');
+        item.className = `video-item ${activeVideo && activeVideo.id === v.id ? 'active' : ''}`;
+        item.id = `item-${v.id}`;
+        item.innerHTML = `
+          <span>${v.title}</span>
+          <span style="font-size:11px; color:#94a3b8;" id="status-${v.id}">Watched: ${Math.floor(watched)}s</span>
+        `;
+        item.onclick = () => loadVideo(v);
+        list.appendChild(item);
+      });
+    }
+
+    function loadVideo(video) {
+      activeVideo = video;
+      document.querySelectorAll('.video-item').forEach(el => el.classList.remove('active'));
+      const activeEl = document.getElementById(`item-${video.id}`);
+      if (activeEl) activeEl.classList.add('active');
+
+      document.getElementById('currentTitle').innerText = video.title;
+      player.src = video.src;
+      document.getElementById('watch-lock-banner').style.display = 'none';
+
+      player.onloadedmetadata = () => {
+        lastTime = player.currentTime;
+        updateWatchStats();
+      };
+    }
+
+    player.addEventListener('play', () => { lastTime = player.currentTime; });
+
+    player.addEventListener('timeupdate', () => {
+      const status = getAccessStatus(activeCourse.id);
+      if (!player.paused && activeVideo && status === "UNLOCKED") {
+        let diff = player.currentTime - lastTime;
+        if (diff > 0 && diff < 1) {
+          userWatchHistory[activeVideo.id] = (userWatchHistory[activeVideo.id] || 0) + diff;
+          if (!syncTimer) {
+            syncTimer = setTimeout(syncWatchHistory, 4000);
+          }
+        }
+        lastTime = player.currentTime;
+
+        const maxAllowed = player.duration * 1.8;
+        const totalWatched = userWatchHistory[activeVideo.id] || 0;
+
+        updateWatchStats();
+
+        if (totalWatched >= maxAllowed) {
+          player.pause();
+          document.getElementById('watch-lock-banner').style.display = 'flex';
+          syncWatchHistory();
+        }
+      }
+    });
+
+    async function syncWatchHistory() {
+      if (!currentUser) return;
+      const ref = doc(db, "watch_history", currentUser.uid);
+      await setDoc(ref, userWatchHistory, { merge: true });
+      syncTimer = null;
+    }
+
+    function updateWatchStats() {
+      if (!player.duration || !activeVideo) return;
+      const totalWatched = userWatchHistory[activeVideo.id] || 0;
+      const maxAllowed = player.duration * 1.8;
+      const remaining = Math.max(0, maxAllowed - totalWatched);
+
+      document.getElementById('watchStats').innerText = 
+        `Total Watched: ${Math.floor(totalWatched)}s / Max Limit (1.8x): ${Math.floor(maxAllowed)}s (Remaining: ${Math.floor(remaining)}s)`;
+    }
+  </script>
+  
 </body>
 </html>
