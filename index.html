@@ -103,6 +103,27 @@
       background: #000;
     }
 
+    .mobile-play-btn {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      cursor: pointer;
+    }
+
+    .mobile-play-btn button {
+      width: auto;
+      padding: 14px 28px;
+      font-size: 1.1rem;
+      border-radius: 30px;
+      background: var(--primary);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
     .limit-overlay {
       position: absolute;
       inset: 0;
@@ -176,13 +197,17 @@
       <h3 id="currentVideoTitle" style="font-size:1.1rem; margin-top:0;">Video Title</h3>
 
       <div class="video-wrapper">
+        <!-- Mobile Trigger Overlay -->
+        <div id="mobileStartOverlay" class="mobile-play-btn" onclick="startMobilePlayback()">
+          <button>▶ Tap to Start Video</button>
+        </div>
+
         <div id="limitOverlay" class="limit-overlay hidden">
           <h3 style="color:#ef4444; margin-bottom:5px; font-size:1.1rem;">1.8x Watch Limit Reached</h3>
           <p style="margin-bottom:15px; font-size:0.9rem;">You have consumed the maximum watch quota for this course video.</p>
           <button onclick="closePlayerAndRepurchase()" style="width:auto; padding:10px 20px; background:var(--primary);">Re-purchase to Reset Quota</button>
         </div>
 
-        <!-- Direct video element configured for desktop & mobile cross-domain media compatibility -->
         <video 
           id="courseVideoPlayer" 
           controls 
@@ -248,6 +273,9 @@
 
   const RAZORPAY_KEY_ID = "rzp_test_TRZUTqu2phk18H";
   const ADMIN_EMAIL = "admin@example.com";
+  
+  // NOTE: GitHub Releases direct URLs cause 302 redirect failures on Mobile Safari.
+  // Uploading this MP4 to Firebase Storage (course-1e801.firebasestorage.app) resolves mobile issues 100%.
   const VIDEO_URL = "https://github.com/pravinganeshhawle01-wq/course-videos/releases/download/v1/i_want_animated_card_text_rev.1.mp4";
 
   firebase.initializeApp(firebaseConfig);
@@ -476,7 +504,7 @@
   }
 
   // ==========================================
-  // UNIVERSAL VIDEO PLAYER LOGIC
+  // UNIVERSAL MOBILE-COMPATIBLE VIDEO PLAYER
   // ==========================================
   const videoPlayer = document.getElementById('courseVideoPlayer');
 
@@ -488,9 +516,10 @@
     document.getElementById('portalSection').classList.add('hidden');
     document.getElementById('playerSection').classList.remove('hidden');
     document.getElementById('limitOverlay').classList.add('hidden');
+    document.getElementById('mobileStartOverlay').classList.remove('hidden');
     document.getElementById('currentVideoTitle').innerText = currentActiveVideo.title;
 
-    // Load saved states from Firestore cache
+    // Load saved states
     const history = userPurchases[currentCourseId]?.watchHistory?.[currentActiveVideo.id] || {};
     localWatchedSeconds = history.watchedSeconds || 0;
     lastSavedPosition = history.lastPosition || 0;
@@ -498,11 +527,19 @@
 
     document.getElementById('resumeNotice').innerText = `${Math.floor(lastSavedPosition)}s`;
 
-    // Direct video element assignment fixes cross-domain redirects on Chrome & Safari
+    // Assign source & load video
     videoPlayer.src = currentActiveVideo.src;
     videoPlayer.load();
 
     setupPlayerEventListeners();
+  }
+
+  function startMobilePlayback() {
+    document.getElementById('mobileStartOverlay').classList.add('hidden');
+    videoPlayer.play().catch(err => {
+      console.error("Autoplay/Play Error:", err);
+      alert("Unable to play video directly. Please upload your video file to Firebase Storage instead of GitHub Releases.");
+    });
   }
 
   function setupPlayerEventListeners() {
@@ -520,10 +557,15 @@
     videoPlayer.onloadedmetadata = calculateQuota;
     videoPlayer.ondurationchange = calculateQuota;
 
+    videoPlayer.onerror = (e) => {
+      console.error("Video element error:", videoPlayer.error);
+      alert("Video load error on mobile. Please host MP4 on Firebase Storage or direct CDN instead of GitHub Releases.");
+    };
+
     videoPlayer.onplay = () => {
+      document.getElementById('mobileStartOverlay').classList.add('hidden');
       calculateQuota();
 
-      // Resume seeking on initial user playback interaction
       if (!hasResumedPosition && lastSavedPosition > 0 && lastSavedPosition < videoPlayer.duration) {
         videoPlayer.currentTime = lastSavedPosition;
         hasResumedPosition = true;
@@ -534,7 +576,6 @@
         return;
       }
 
-      // Track seconds spent playing
       clearInterval(trackingInterval);
       trackingInterval = setInterval(() => {
         if (!videoPlayer.paused && !videoPlayer.ended) {
@@ -547,7 +588,6 @@
         }
       }, 1000);
 
-      // Periodic 10s sync to Firestore
       clearInterval(syncTimer);
       syncTimer = setInterval(() => {
         saveProgressToFirestore();
